@@ -2,40 +2,42 @@
 #import sys
 import boto3
 import logging
-#import os.path
+import os.path
 logging.basicConfig(
     filename="log1.log",
     level=10,
     format="%(asctime)s:%(levelno)s:%(message)s"
 
 )
-#sname = 'cfsample'
-#url = 'https://s3.amazonaws.com/cc-prasanth/cfsample1.json'
+
 
 client = boto3.client('cloudformation')
 
 def main():
-    cf_validation('https://s3.amazonaws.com/cc-prasanth/cfsample1.json')
-    cf_stack_creation('cfsample','https://s3.amazonaws.com/cc-prasanth/cfsample1.json')
-    cf_stack_description('cfsample')
+    cf_validation("/home/prasanth/Documents/Workspace/cfsample1.json")
+    cf_stack_creation('cfsample3', "/home/prasanth/Documents/Workspace/cfsample1.json")
+    cf_stack_description('cfsample3')
+
 
 def cf_validation(url):
-    valuation=client.validate_template(TemplateURL = url)
-    logging.debug("Validation log: ", valuation)
+    with open(url, 'r+') as f:
+        valuation = client.validate_template(TemplateBody = f.read())
+        logging.debug("Validation log: ", valuation)
 
 
 def cf_stack_creation(sname,url):
-    response = client.create_stack(
-    StackName = sname,
-    TemplateURL= url,
-    TimeoutInMinutes = 2,
-    OnFailure='ROLLBACK',)
-    logging.debug("Stack creation Output:", response)
+    with open(url, 'r+') as f:
+        response = client.create_stack(
+            StackName = sname,
+            TemplateBody= f.read(),
+            TimeoutInMinutes = 2,
+            OnFailure='ROLLBACK',)
+        logging.debug("Stack creation Output:", response)
+
 
 def cf_stack_description(sname):
     description = client.describe_stacks(StackName=sname)
     logging.debug("stack description:", description)
-
 
 
 if __name__ == '__main__':
